@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="es.uvigo.ftroncoso.tango.MainActivity">
+
+    <android.opengl.GLSurfaceView
+        android:id="@+id/surfaceview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ToggleButton
+        android:id="@+id/rec_switcher"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="25dp"
+        android:background="@drawable/btn_shutter"
+        android:onClick="recordClicked"
+        android:textColor="@android:color/holo_red_dark"
+        android:textOff=""
+        android:textOn=""
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp" />
+
+</RelativeLayout>

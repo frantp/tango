@@ -10,15 +10,19 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.projecttango.examples.cpp.util.TangoInitializationHelper;
 
 import java.io.File;
+import java.text.DecimalFormat;
 
 public class MainActivity extends AppCompatActivity {
     private GLSurfaceView mSurfaceView;
-    private ToggleButton mRecordSwitcher;
+    private TextView[] mPoseText;
+    private ToggleButton mRgbSwitcher, mRecSwitcher;
     private File mOutFolder;
 
     private ServiceConnection mTangoServiceConnection = new ServiceConnection() {
@@ -43,6 +47,20 @@ public class MainActivity extends AppCompatActivity {
 
         mOutFolder = new File(Environment.getExternalStorageDirectory(), "tango_tests");
         TangoNative.onCreate(this, mOutFolder.getPath());
+        TangoNative.registerCallback(new TangoNative.Callback() {
+            @Override
+            public void onPoseAvailable(final double[] pose) {
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final DecimalFormat df = new DecimalFormat("0.000");
+                        for (int i = 0; i < pose.length; i++) {
+                            mPoseText[i].setText(df.format(pose[i]));
+                        }
+                    }
+                });
+            }
+        });
 
         // Register for display orientation change updates.
         DisplayManager displayManager = (DisplayManager) getSystemService(DISPLAY_SERVICE);
@@ -68,7 +86,17 @@ public class MainActivity extends AppCompatActivity {
         mSurfaceView = (GLSurfaceView) findViewById(R.id.surfaceview);
         mSurfaceView.setEGLContextClientVersion(2);
         mSurfaceView.setRenderer(new VideoRenderer());
-        mRecordSwitcher = (ToggleButton) findViewById(R.id.rec_switcher);
+        mPoseText = new TextView[]{
+                (TextView) findViewById(R.id.poseX_text),
+                (TextView) findViewById(R.id.poseY_text),
+                (TextView) findViewById(R.id.poseZ_text),
+                (TextView) findViewById(R.id.poseQW_text),
+                (TextView) findViewById(R.id.poseQX_text),
+                (TextView) findViewById(R.id.poseQY_text),
+                (TextView) findViewById(R.id.poseQZ_text),
+        };
+        mRgbSwitcher = (ToggleButton) findViewById(R.id.rgb_switcher);
+        mRecSwitcher = (ToggleButton) findViewById(R.id.rec_switcher);
     }
 
     @Override
@@ -81,15 +109,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        mRecordSwitcher.setChecked(false);
+        mRecSwitcher.setChecked(false);
         mSurfaceView.onPause();
         TangoNative.onPause();
         unbindService(mTangoServiceConnection);
     }
 
-    public void recordClicked(View view) {
+    public void calClicked(View view) {
         mOutFolder.mkdirs();
-        TangoNative.setRecord(mRecordSwitcher.isChecked());
+        TangoNative.writeCalData();
+        Toast.makeText(MainActivity.this, "Calibration data written to disc", Toast.LENGTH_SHORT).show();
+    }
+
+    public void rgbClicked(View view) {
+        TangoNative.setRgb(mRgbSwitcher.isChecked());
+    }
+
+    public void recClicked(View view) {
+        mOutFolder.mkdirs();
+        TangoNative.setRec(mRecSwitcher.isChecked());
     }
 
     private void setDisplayRotation() {

@@ -5,19 +5,23 @@
 #include <sstream>
 #include <glm/matrix.hpp>
 
+#include "jni_interface.h"
 #include "TangoApp.h"
 
 namespace {
     constexpr int kTangoCoreMinimumVersion = 9377;
-    const std::string IMG_EXT = ".gray";
 
-    void OnFrameAvailableRouter(void *context, TangoCameraId, const TangoImageBuffer *buffer) {
-        static_cast<ftp::TangoApp *>(context)->OnFrameAvailable(buffer);
+    void onFrameAvailableRouter(void *context, TangoCameraId, const TangoImageBuffer *buffer) {
+        static_cast<ftp::TangoApp *>(context)->onFrameAvailable(buffer);
+    }
+
+    void onPoseAvailableRouter(void *context, const TangoPoseData *pose) {
+        onPoseAvailable(pose);
     }
 }  // namespace
 
 namespace ftp {
-    void TangoApp::OnCreate(JNIEnv *env, jobject caller_activity, const std::string &save_path) {
+    void TangoApp::onCreate(JNIEnv *env, jobject caller_activity, const std::string &save_path) {
         int version = 0;
         const auto ret = TangoSupport_GetTangoVersion(env, caller_activity, &version);
         if (ret != TANGO_SUCCESS || version < kTangoCoreMinimumVersion) {
@@ -30,11 +34,12 @@ namespace ftp {
         is_texture_id_set_ = false;
         video_overlay_drawable_ = NULL;
         is_video_overlay_rotation_set_ = false;
-        record_ = false;
+        rgb_ = false;
+        rec_ = false;
         save_path_ = save_path;
     }
 
-    void TangoApp::OnTangoServiceConnected(JNIEnv *env, jobject binder) {
+    void TangoApp::onTangoServiceConnected(JNIEnv *env, jobject binder) {
         if (TangoService_setBinder(env, binder) != TANGO_SUCCESS) {
             LOGE("TangoApp::OnTangoServiceConnected, "
                          "TangoService_setBinder error");
@@ -56,10 +61,20 @@ namespace ftp {
         }
 
         ret = TangoService_connectOnFrameAvailable(TANGO_CAMERA_COLOR, this,
-                                                   OnFrameAvailableRouter);
+                                                   onFrameAvailableRouter);
         if (ret != TANGO_SUCCESS) {
             LOGE("TangoApp::OnTangoServiceConnected, "
                          "Error connecting color frame %d", ret);
+            std::exit(EXIT_SUCCESS);
+        }
+
+        TangoCoordinateFramePair pair;
+        pair.base = TANGO_COORDINATE_FRAME_START_OF_SERVICE;
+        pair.target = TANGO_COORDINATE_FRAME_DEVICE;
+        ret = TangoService_connectOnPoseAvailable(1, &pair, onPoseAvailableRouter);
+        if (ret != TANGO_SUCCESS) {
+            LOGE("TangoApp::OnTangoServiceConnected, "
+                         "Error connecting pose %d", ret);
             std::exit(EXIT_SUCCESS);
         }
 
@@ -77,7 +92,7 @@ namespace ftp {
         is_service_connected_ = true;
     }
 
-    void TangoApp::OnPause() {
+    void TangoApp::onPause() {
         // Free TangoConfig structure
         if (tango_config_ != nullptr) {
             TangoConfig_free(tango_config_);
@@ -88,15 +103,16 @@ namespace ftp {
         TangoService_disconnect();
 
         // Free buffer data
-        record_ = false;
+        rec_ = false;
+        rgb_ = false;
         is_service_connected_ = false;
         is_video_overlay_rotation_set_ = false;
         is_texture_id_set_ = false;
-        this->DeleteDrawables();
+        this->deleteDrawables();
     }
 
-    void TangoApp::OnFrameAvailable(const TangoImageBuffer *buffer) {
-        if (!record_) {
+    void TangoApp::onFrameAvailable(const TangoImageBuffer *buffer) {
+        if (!rec_) {
             return;
         }
 
@@ -108,28 +124,23 @@ namespace ftp {
 
         const auto w = buffer->width;
         const auto h = buffer->height;
-        //const auto data_size = w * h * 3 / 2;
-        const auto data_size = w * h;
+        const auto data_size = rgb_ ? w * h * 3 / 2 : w * h;
         const auto ts = lround(buffer->timestamp * 1e6);
 
         // Get pose
-        TangoCoordinateFramePair pair;
-        pair.base = TANGO_COORDINATE_FRAME_START_OF_SERVICE;
-        pair.target = TANGO_COORDINATE_FRAME_DEVICE;
-        TangoPoseData pose;
-        TangoService_getPoseAtTime(buffer->timestamp, pair, &pose);
+        const auto pose = this->getPose(buffer->timestamp);
 
         // Get image
         std::ostringstream ss;
-        ss << save_path_ << "/" << ts << IMG_EXT;
+        ss << save_path_ << "/" << ts << (rgb_ ? ".yuv" : ".gray");
         const auto imgfile = ss.str();
 
         // Store pose
-        const auto posefile = save_path_ + "/" + "poses.txt";
+        const auto posefile = save_path_ + "/poses.txt";
         std::fstream poseout(posefile, std::ios_base::app);
         if (poseout.tellg() == 0)
-            poseout << "# t w h x y z qw qx qy qz" << std::endl;
-        poseout << ts << " " << w << " " << h;
+            poseout << "# t x y z qw qx qy qz" << std::endl;
+        poseout << ts;
         for (int i = 0; i < 3; i++) poseout << " " << pose.translation[i];
         for (int i = 0; i < 4; i++) poseout << " " << pose.orientation[i];
         poseout << std::endl;
@@ -141,19 +152,19 @@ namespace ftp {
         imgout.close();
     }
 
-    void TangoApp::OnSurfaceCreated() {
+    void TangoApp::onSurfaceCreated() {
         if (video_overlay_drawable_ != NULL) {
-            this->DeleteDrawables();
+            this->deleteDrawables();
         }
         video_overlay_drawable_ = new tango_gl::VideoOverlay(GL_TEXTURE_EXTERNAL_OES,
                                                              display_rotation_);
     }
 
-    void TangoApp::OnSurfaceChanged(int width, int height) {
+    void TangoApp::onSurfaceChanged(int width, int height) {
         glViewport(0, 0, width, height);
     }
 
-    void TangoApp::OnDrawFrame() {
+    void TangoApp::onDrawFrame() {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
@@ -186,13 +197,46 @@ namespace ftp {
         video_overlay_drawable_->Render(glm::mat4(1.0f), glm::mat4(1.0f));
     }
 
-    void TangoApp::OnDisplayChanged(int display_rotation) {
+    void TangoApp::onDisplayChanged(int display_rotation) {
         display_rotation_ = static_cast<TangoSupportRotation>(display_rotation);
         is_video_overlay_rotation_set_ = false;
     }
 
-    void TangoApp::DeleteDrawables() {
+    void TangoApp::deleteDrawables() {
         delete video_overlay_drawable_;
         video_overlay_drawable_ = NULL;
+    }
+
+    TangoPoseData TangoApp::getPose(double timestamp) {
+        TangoCoordinateFramePair pair;
+        pair.base = TANGO_COORDINATE_FRAME_START_OF_SERVICE;
+        pair.target = TANGO_COORDINATE_FRAME_DEVICE;
+        TangoPoseData pose;
+        TangoService_getPoseAtTime(timestamp, pair, &pose);
+        return pose;
+    }
+
+    void TangoApp::writeCalData() {
+        // Get info
+        TangoCameraIntrinsics intrinsics;
+        TangoService_getCameraIntrinsics(TANGO_CAMERA_COLOR, &intrinsics);
+        TangoCoordinateFramePair pair;
+        pair.base = TANGO_COORDINATE_FRAME_IMU;
+        pair.target = TANGO_COORDINATE_FRAME_CAMERA_COLOR;
+        TangoPoseData pose;
+        TangoService_getPoseAtTime(0, pair, &pose);
+
+        // Store info
+        const auto camfile = save_path_ + "/camera.txt";
+        std::fstream camout(camfile);
+        camout << intrinsics.width << " " << intrinsics.height << std::endl
+               << intrinsics.fx << " " << intrinsics.fy << " "
+               << intrinsics.cx << " " << intrinsics.cy << std::endl;
+        for (int i = 0; i < 5; i++) camout << (i > 0 ? " " : "") << intrinsics.distortion[i];
+        camout << std::endl;
+        for (int i = 0; i < 3; i++) camout << (i > 0 ? " " : "") << pose.translation[i];
+        for (int i = 0; i < 4; i++) camout << " " << pose.orientation[i];
+        camout << std::endl;
+        camout.close();
     }
 }  // namespace ftp

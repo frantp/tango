@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 add_library( tangoc SHARED
-             src/main/jni/jni.cpp
+             src/main/jni/jni_interface.cpp
              src/main/jni/TangoApp.cpp
              src/main/jni/tango-gl/video_overlay.cc
              src/main/jni/tango-gl/drawable_object.cc

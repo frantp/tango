@@ -10,19 +10,146 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <ToggleButton
-        android:id="@+id/rec_switcher"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/poseX_text"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:textAlignment="textEnd"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/poseY_text"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:textAlignment="textEnd"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/poseZ_text"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:textAlignment="textEnd"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/poseQW_text"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:textAlignment="textEnd"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/poseQX_text"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:textAlignment="textEnd"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/poseQY_text"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:textAlignment="textEnd"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/poseQZ_text"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:textAlignment="textEnd"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="25dp"
-        android:background="@drawable/btn_shutter"
-        android:onClick="recordClicked"
-        android:textColor="@android:color/holo_red_dark"
-        android:textOff=""
-        android:textOn=""
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp" />
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"
+            android:background="@drawable/btn_cal"
+            android:onClick="calClicked"
+            android:textOff=""
+            android:textOn=""
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="0dp" />
+
+        <ToggleButton
+            android:id="@+id/rgb_switcher"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"
+            android:background="@drawable/btn_rgb"
+            android:onClick="rgbClicked"
+            android:textOff=""
+            android:textOn=""
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="0dp" />
+
+        <ToggleButton
+            android:id="@+id/rec_switcher"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"
+            android:background="@drawable/btn_shutter"
+            android:onClick="recClicked"
+            android:textOff=""
+            android:textOn=""
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="0dp" />
+    </LinearLayout>
 
 </RelativeLayout>

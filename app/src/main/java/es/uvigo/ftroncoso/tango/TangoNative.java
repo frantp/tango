@@ -29,5 +29,15 @@ class TangoNative {
 
     public static native void onDisplayChanged(int displayRotation);
 
-    public static native void setRecord(boolean record);
+    public static native void writeCalData();
+
+    public static native void setRgb(boolean rgb);
+
+    public static native void setRec(boolean rec);
+
+    public static native void registerCallback(Callback callback);
+
+    interface Callback {
+        void onPoseAvailable(double[] pose);
+    }
 }

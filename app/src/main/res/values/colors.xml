@@ -3,6 +3,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="shutterPrimary">#bbffffff</color>
-    <color name="shutterSecondary">#bbcc0000</color>
+    <color name="colorWhite">#bbffffff</color>
+    <color name="colorGray">#bb888888</color>
+    <color name="colorRed">#bbcc0000</color>
+    <color name="colorGreen">#bb669900</color>
+    <color name="colorBlue">#bb0099cc</color>
 </resources>

@@ -9,7 +9,7 @@
 namespace ftp {
     class TangoApp {
     public:
-        void onCreate(JNIEnv *env, jobject caller_activity, const std::string &save_path);
+        void onCreate(JNIEnv *env, jobject caller_activity);
 
         void onTangoServiceConnected(JNIEnv *env, jobject binder);
 
@@ -27,11 +27,16 @@ namespace ftp {
 
         TangoPoseData getPose(double timestamp = 0);
 
-        void writeCalData();
+        void writeCalData(const std::string &filename);
 
-        inline void setRgb(bool rgb) { rgb_ = rgb; }
+        inline void start(bool rgb, const std::string &dirname) {
+            rgb_ = rgb;
+            save_path_ = dirname;
+        }
 
-        inline void setRec(bool rec) { rec_ = rec; }
+        inline void stop() {
+            save_path_ = "";
+        }
 
     private:
         TangoConfig tango_config_;
@@ -39,7 +44,7 @@ namespace ftp {
         bool is_service_connected_;
         bool is_texture_id_set_;
         bool is_video_overlay_rotation_set_;
-        bool rgb_, rec_;
+        bool rgb_;
         std::string save_path_;
         TangoSupportRotation display_rotation_;
 

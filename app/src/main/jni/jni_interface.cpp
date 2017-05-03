@@ -15,11 +15,15 @@ extern "C" {
     JNIEXPORT type JNICALL \
     Java_es_uvigo_ftroncoso_tango_TangoNative_ ## name
 
-JNIFUNC(void, onCreate)(JNIEnv *env, jobject, jobject activity, jstring savePath) {
-    const char *save_path_str = env->GetStringUTFChars(savePath, NULL);
-    const auto save_path = std::string(save_path_str);
-    env->ReleaseStringUTFChars(savePath, save_path_str);
-    app.onCreate(env, activity, save_path);
+std::string to_string(JNIEnv *env, jstring jstr) {
+    const char *cstr = env->GetStringUTFChars(jstr, NULL);
+    const auto str = std::string(cstr);
+    env->ReleaseStringUTFChars(jstr, cstr);
+    return str;
+}
+
+JNIFUNC(void, onCreate)(JNIEnv *env, jobject, jobject activity) {
+    app.onCreate(env, activity);
 }
 
 JNIFUNC(void, onTangoServiceConnected)(JNIEnv *env, jobject, jobject binder) {
@@ -46,16 +50,16 @@ JNIFUNC(void, onDisplayChanged)(JNIEnv *env, jobject, jint display_rotation) {
     app.onDisplayChanged(display_rotation);
 }
 
-JNIFUNC(void, writeCalData)(JNIEnv *env, jobject, jboolean rgb) {
-    app.writeCalData();
+JNIFUNC(void, writeCalData)(JNIEnv *env, jobject, jstring savePath) {
+    app.writeCalData(to_string(env, savePath));
 }
 
-JNIFUNC(void, setRgb)(JNIEnv *env, jobject, jboolean rgb) {
-    app.setRgb(rgb);
+JNIFUNC(void, start)(JNIEnv *env, jobject, jboolean rgb, jstring savePath) {
+    app.start(rgb, to_string(env, savePath));
 }
 
-JNIFUNC(void, setRec)(JNIEnv *env, jobject, jboolean rec) {
-    app.setRec(rec);
+JNIFUNC(void, stop)(JNIEnv *env, jobject) {
+    app.stop();
 }
 
 static JavaVM *jvm = nullptr;
@@ -86,11 +90,13 @@ void onPoseAvailable(const TangoPoseData *pose) {
         return;
     }
 
-    jdouble poseArray[7];
-    for (int i = 0; i < 3; i++) poseArray[i] = pose->translation[i];
-    for (int i = 0; i < 4; i++) poseArray[i + 3] = pose->orientation[i];
-    auto values = env->NewDoubleArray(7);
-    env->SetDoubleArrayRegion(values, 0, 7, poseArray);
+    constexpr int N = 8;
+    jdouble poseArray[N];
+    poseArray[0] = pose->timestamp;
+    for (int i = 0; i < 3; i++) poseArray[i + 1] = pose->translation[i];
+    for (int i = 0; i < 4; i++) poseArray[i + 4] = pose->orientation[i];
+    auto values = env->NewDoubleArray(N);
+    env->SetDoubleArrayRegion(values, 0, N, poseArray);
     env->CallVoidMethod(jobj, jmid, values);
     env->DeleteLocalRef(values);
 }

@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:onClick="screenClicked"
     tools:context="es.uvigo.ftroncoso.tango.MainActivity">
 
     <android.opengl.GLSurfaceView
@@ -11,14 +14,91 @@
         android:layout_height="match_parent" />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="240dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="5dp"
+        android:orientation="horizontal"
+        android:padding="5dp">
 
-        <LinearLayout
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:labelFor="@+id/savepath_text"
+            android:shadowColor="@android:color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:text="Save path:" />
+
+        <es.uvigo.ftroncoso.tango.ExtEditText
+            android:id="@+id/savepath_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:imeOptions="flagNoExtractUi"
+            android:inputType="textUri"
+            android:shadowColor="@android:color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:text="tango"
+            android:textColor="@android:color/white"
+            android:textIsSelectable="false"
+            android:textSize="15dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="5dp"
+        android:orientation="vertical"
+        android:padding="5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:text="Time:" />
+
+            <TextView
+                android:id="@+id/poseT_text"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:textAlignment="textEnd"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:text="Pos:" />
 
             <TextView
                 android:id="@+id/poseX_text"
@@ -55,20 +135,19 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="end"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/poseQW_text"
-                android:layout_width="50dp"
+                android:layout_width="40dp"
                 android:layout_height="wrap_content"
                 android:shadowColor="@android:color/black"
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="1"
-                android:textAlignment="textEnd"
-                android:textColor="@android:color/white" />
+                android:text="Ori:" />
 
             <TextView
                 android:id="@+id/poseQX_text"
@@ -102,6 +181,17 @@
                 android:shadowRadius="1"
                 android:textAlignment="textEnd"
                 android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/poseQW_text"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:textAlignment="textEnd"
+                android:textColor="@android:color/white" />
         </LinearLayout>
     </LinearLayout>
 
@@ -111,13 +201,14 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:padding="5dp">
 
         <Button
+            android:id="@+id/btn_cal"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_gravity="center"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:background="@drawable/btn_cal"
             android:onClick="calClicked"
             android:textOff=""
@@ -126,24 +217,23 @@
             tools:layout_editor_absoluteY="0dp" />
 
         <ToggleButton
-            android:id="@+id/rgb_switcher"
+            android:id="@+id/btn_rgb"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_gravity="center"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:background="@drawable/btn_rgb"
-            android:onClick="rgbClicked"
             android:textOff=""
             android:textOn=""
             tools:layout_editor_absoluteX="0dp"
             tools:layout_editor_absoluteY="0dp" />
 
         <ToggleButton
-            android:id="@+id/rec_switcher"
+            android:id="@+id/btn_rec"
             android:layout_width="75dp"
             android:layout_height="75dp"
             android:layout_gravity="center"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:background="@drawable/btn_shutter"
             android:onClick="recClicked"
             android:textOff=""

@@ -15,7 +15,7 @@ class TangoNative {
         System.loadLibrary("tangoc");
     }
 
-    public static native void onCreate(Activity callerActivity, String savePath);
+    public static native void onCreate(Activity callerActivity);
 
     public static native void onTangoServiceConnected(IBinder binder);
 
@@ -29,11 +29,11 @@ class TangoNative {
 
     public static native void onDisplayChanged(int displayRotation);
 
-    public static native void writeCalData();
+    public static native void writeCalData(String filename);
 
-    public static native void setRgb(boolean rgb);
+    public static native void start(boolean rgb, String dirname);
 
-    public static native void setRec(boolean rec);
+    public static native void stop();
 
     public static native void registerCallback(Callback callback);
 

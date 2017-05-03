@@ -21,7 +21,7 @@ namespace {
 }  // namespace
 
 namespace ftp {
-    void TangoApp::onCreate(JNIEnv *env, jobject caller_activity, const std::string &save_path) {
+    void TangoApp::onCreate(JNIEnv *env, jobject caller_activity) {
         int version = 0;
         const auto ret = TangoSupport_GetTangoVersion(env, caller_activity, &version);
         if (ret != TANGO_SUCCESS || version < kTangoCoreMinimumVersion) {
@@ -35,8 +35,7 @@ namespace ftp {
         video_overlay_drawable_ = NULL;
         is_video_overlay_rotation_set_ = false;
         rgb_ = false;
-        rec_ = false;
-        save_path_ = save_path;
+        save_path_ = "";
     }
 
     void TangoApp::onTangoServiceConnected(JNIEnv *env, jobject binder) {
@@ -103,7 +102,7 @@ namespace ftp {
         TangoService_disconnect();
 
         // Free buffer data
-        rec_ = false;
+        save_path_ = "";
         rgb_ = false;
         is_service_connected_ = false;
         is_video_overlay_rotation_set_ = false;
@@ -112,7 +111,7 @@ namespace ftp {
     }
 
     void TangoApp::onFrameAvailable(const TangoImageBuffer *buffer) {
-        if (!rec_) {
+        if (save_path_ == "") {
             return;
         }
 
@@ -216,7 +215,7 @@ namespace ftp {
         return pose;
     }
 
-    void TangoApp::writeCalData() {
+    void TangoApp::writeCalData(const std::string &filename) {
         // Get info
         TangoCameraIntrinsics intrinsics;
         TangoService_getCameraIntrinsics(TANGO_CAMERA_COLOR, &intrinsics);
@@ -227,8 +226,7 @@ namespace ftp {
         TangoService_getPoseAtTime(0, pair, &pose);
 
         // Store info
-        const auto camfile = save_path_ + "/camera.txt";
-        std::fstream camout(camfile);
+        std::ofstream camout(filename);
         camout << intrinsics.width << " " << intrinsics.height << std::endl
                << intrinsics.fx << " " << intrinsics.fy << " "
                << intrinsics.cx << " " << intrinsics.cy << std::endl;

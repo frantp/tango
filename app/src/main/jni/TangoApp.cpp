@@ -138,7 +138,7 @@ namespace ftp {
         const auto posefile = save_path_ + "/poses.txt";
         std::fstream poseout(posefile, std::ios_base::app);
         if (poseout.tellg() == 0)
-            poseout << "# t x y z qw qx qy qz" << std::endl;
+            poseout << "# t x y z qx qy qz qw" << std::endl;
         poseout << ts;
         for (int i = 0; i < 3; i++) poseout << " " << pose.translation[i];
         for (int i = 0; i < 4; i++) poseout << " " << pose.orientation[i];
@@ -219,21 +219,36 @@ namespace ftp {
         // Get info
         TangoCameraIntrinsics intrinsics;
         TangoService_getCameraIntrinsics(TANGO_CAMERA_COLOR, &intrinsics);
+        TangoPoseData pose_camera_color, pose_device;
         TangoCoordinateFramePair pair;
         pair.base = TANGO_COORDINATE_FRAME_IMU;
         pair.target = TANGO_COORDINATE_FRAME_CAMERA_COLOR;
-        TangoPoseData pose;
-        TangoService_getPoseAtTime(0, pair, &pose);
+        TangoService_getPoseAtTime(0, pair, &pose_camera_color);
+        pair.base = TANGO_COORDINATE_FRAME_IMU;
+        pair.target = TANGO_COORDINATE_FRAME_DEVICE;
+        TangoService_getPoseAtTime(0, pair, &pose_device);
 
         // Store info
         std::ofstream camout(filename);
         camout << intrinsics.width << " " << intrinsics.height << std::endl
                << intrinsics.fx << " " << intrinsics.fy << " "
                << intrinsics.cx << " " << intrinsics.cy << std::endl;
-        for (int i = 0; i < 5; i++) camout << (i > 0 ? " " : "") << intrinsics.distortion[i];
+        if (intrinsics.calibration_type == TANGO_CALIBRATION_POLYNOMIAL_3_PARAMETERS) {
+            intrinsics.distortion[4] = intrinsics.distortion[2];
+            intrinsics.distortion[2] = 0;
+        }
+        for (int i = 0; i < 5; i++)
+            camout << (i > 0 ? " " : "") << intrinsics.distortion[i];
         camout << std::endl;
-        for (int i = 0; i < 3; i++) camout << (i > 0 ? " " : "") << pose.translation[i];
-        for (int i = 0; i < 4; i++) camout << " " << pose.orientation[i];
+        for (int i = 0; i < 3; i++)
+            camout << (i > 0 ? " " : "") << pose_camera_color.translation[i];
+        for (int i = 0; i < 4; i++)
+            camout << " " << pose_camera_color.orientation[i];
+        camout << std::endl;
+        for (int i = 0; i < 3; i++)
+            camout << (i > 0 ? " " : "") << pose_device.translation[i];
+        for (int i = 0; i < 4; i++)
+            camout << " " << pose_device.orientation[i];
         camout << std::endl;
         camout.close();
     }

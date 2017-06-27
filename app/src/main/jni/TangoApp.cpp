@@ -52,10 +52,33 @@ namespace ftp {
             std::exit(EXIT_SUCCESS);
         }
 
-        int ret = TangoConfig_setBool(tango_config_, "config_enable_color_camera", true);
+        int ret =
+                TangoConfig_setBool(tango_config_, "config_enable_auto_recovery", true);
         if (ret != TANGO_SUCCESS) {
             LOGE("TangoApp::OnTangoServiceConnected, "
-                         "config_enable_color_camera() failed with error code: %d", ret);
+                         "config_enable_auto_recovery failed with error code: %d", ret);
+            std::exit(EXIT_SUCCESS);
+        }
+
+        ret = TangoConfig_setBool(tango_config_, "config_enable_color_camera", true);
+        if (ret != TANGO_SUCCESS) {
+            LOGE("TangoApp::OnTangoServiceConnected, "
+                         "config_enable_color_camera failed with error code: %d", ret);
+            std::exit(EXIT_SUCCESS);
+        }
+
+        ret = TangoConfig_setBool(tango_config_, "config_enable_low_latency_imu_integration", true);
+        if (ret != TANGO_SUCCESS) {
+            LOGE("TangoApp::OnTangoServiceConnected, "
+                         "config_enable_low_latency_imu_integration failed with error code: %d",
+                 ret);
+            std::exit(EXIT_SUCCESS);
+        }
+
+        ret = TangoConfig_setBool(tango_config_, "config_enable_drift_correction", true);
+        if (ret != TANGO_SUCCESS) {
+            LOGE("TangoApp::OnTangoServiceConnected, "
+                         "enabling config_enable_drift_correction failed with error code: %d", ret);
             std::exit(EXIT_SUCCESS);
         }
 
@@ -68,7 +91,7 @@ namespace ftp {
         }
 
         TangoCoordinateFramePair pair;
-        pair.base = TANGO_COORDINATE_FRAME_START_OF_SERVICE;
+        pair.base = TANGO_COORDINATE_FRAME_AREA_DESCRIPTION;
         pair.target = TANGO_COORDINATE_FRAME_DEVICE;
         ret = TangoService_connectOnPoseAvailable(1, &pair, onPoseAvailableRouter);
         if (ret != TANGO_SUCCESS) {
@@ -208,7 +231,7 @@ namespace ftp {
 
     TangoPoseData TangoApp::getPose(double timestamp) {
         TangoCoordinateFramePair pair;
-        pair.base = TANGO_COORDINATE_FRAME_START_OF_SERVICE;
+        pair.base = TANGO_COORDINATE_FRAME_AREA_DESCRIPTION;
         pair.target = TANGO_COORDINATE_FRAME_DEVICE;
         TangoPoseData pose;
         TangoService_getPoseAtTime(timestamp, pair, &pose);
